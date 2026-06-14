@@ -24,8 +24,8 @@ def inventory(root, max_depth=4):
         depth = dirpath.replace(root, '').count(os.sep)
         if depth > max_depth:
             continue
-        # Skip VCS
-        dirnames[:] = [d for d in dirnames if d not in ['.git', 'node_modules', '__pycache__', '.venv', 'venv']]
+        # Skip VCS and virtualenvs (NOT __pycache__ — we count .pyc files below)
+        dirnames[:] = [d for d in dirnames if d not in ['.git', 'node_modules', '.venv', 'venv']]
         
         for f in filenames:
             fp = os.path.join(dirpath, f)
