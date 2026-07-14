@@ -7,8 +7,16 @@ Outputs JSON with file counts, sizes, and categorized junk.
 Safe: read-only, never modifies files.
 """
 
-import os, sys, json, datetime
+import os, sys, json, datetime, hashlib
 from collections import defaultdict
+
+def file_hash(path):
+    """Fix #4: 用内容哈希替代 (文件名+大小) 做重复检测"""
+    try:
+        with open(path, 'rb') as f:
+            return hashlib.md5(f.read()).hexdigest()
+    except:
+        return None
 
 def inventory(root, max_depth=4):
     stats = {
@@ -24,7 +32,6 @@ def inventory(root, max_depth=4):
         depth = dirpath.replace(root, '').count(os.sep)
         if depth > max_depth:
             continue
-        # Skip VCS and virtualenvs (NOT __pycache__ — we count .pyc files below)
         dirnames[:] = [d for d in dirnames if d not in ['.git', 'node_modules', '.venv', 'venv']]
         
         for f in filenames:
@@ -36,25 +43,22 @@ def inventory(root, max_depth=4):
             stats['total_files'] += 1
             stats['total_size'] += size
             
-            # Empty files (not markers)
             if size == 0 and f not in ['.gitkeep', '__init__.py']:
                 stats['empty'].append(fp)
             
-            # Python cache
             if f.endswith('.pyc'):
                 stats['pycache'].append(fp)
             
-            # Test exports (heuristic)
             if 'exports' in dirpath and f.endswith(('.xlsx', '.docx', '.pdf')):
                 stats['exports'].append(fp)
             
-            # Duplicate detection
-            key = (f, size)
-            if key not in stats['duplicates']:
-                stats['duplicates'][key] = []
-            stats['duplicates'][key].append(fp)
+            # Fix #4: 用内容哈希检测真正的重复文件
+            content_key = file_hash(fp)
+            if content_key and content_key not in stats['duplicates']:
+                stats['duplicates'][content_key] = []
+            if content_key:
+                stats['duplicates'][content_key].append(fp)
             
-            # Python metrics
             if f.endswith('.py'):
                 stats['py_files'] += 1
                 try:
@@ -63,7 +67,6 @@ def inventory(root, max_depth=4):
                 except:
                     pass
             
-            # Old log detection
             if 'memory' in dirpath and f.endswith('.md'):
                 try:
                     date_part = f.replace('.md', '').replace('-', '')
@@ -72,10 +75,8 @@ def inventory(root, max_depth=4):
                 except:
                     pass
     
-    # Filter duplicates to only those with >1 copy
     stats['duplicates'] = {k: v for k, v in stats['duplicates'].items() if len(v) > 1}
     
-    # Count backup dirs
     backup_dir = os.path.join(root, 'backups')
     if os.path.isdir(backup_dir):
         backups = sorted([d for d in os.listdir(backup_dir) if os.path.isdir(os.path.join(backup_dir, d))])
@@ -118,8 +119,7 @@ if __name__ == '__main__':
     root = os.path.abspath(sys.argv[1])
     stats = inventory(root)
     report(stats)
-    # Output JSON for programmatic use
     json_stats = {k: v for k, v in stats.items() if k != 'duplicates'}
-    json_stats['duplicates'] = {f"{k[0]}({k[1]}b)": len(v) for k, v in stats['duplicates'].items()}
+    json_stats['duplicates'] = {f"md5:{k[:12]}": len(v) for k, v in stats['duplicates'].items()}
     print("\n--- JSON ---")
     print(json.dumps(json_stats, indent=2, ensure_ascii=False, default=str))
