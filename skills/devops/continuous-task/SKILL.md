@@ -7,7 +7,7 @@ metadata:
   hermes:
     tags: [automation, loop, scheduler, background]
     related_skills: []
-description: "Continuous task loop: start, stop, check status. 持续迭代任务循环器：自动间隔、独立会话、上下文不膨胀。Each iteration fresh session, no token accumulation."
+description: "Continuous task looper with auto-interval, isolated sessions. 持续迭代任务循环器。"
 category: devops
 ---
 
