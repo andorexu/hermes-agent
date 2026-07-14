@@ -1,6 +1,6 @@
 ---
 name: web-unblocker
-description: Use when a website blocks you with Cloudflare, captcha, 403, or region-locked content. 跨平台反爬：绕过Cloudflare/验证码/403/地区锁。全球销售商及大陆供货商采购实测验证。Cross-platform via curl_cffi, works on Linux/macOS/Windows.
+description: "Bypass Cloudflare, captcha, 403, region-locks. 跨平台反爬虫工具集。"
 version: 1.0.0
 author: andorexu
 license: MIT
@@ -220,7 +220,7 @@ Installation verified 2026-06-10. Chromium 148.0 headless shell confirmed workin
 - 2026-06-10: Chose Qwen3.5-3B-Omni over Qwen-VL-2B/MiniCPM-V 2.6 for multimodal layer. Omni has voice+video understanding, only 1GB more than VL-2B. User's Intel Arc 140V has 16GB shared VRAM — easily handles 3GB model.
 - 2026-06-10: Ollama installation in progress via BitsTransfer (~200KB/s, ETA 1-2 hours). Will install to D:\Ollama with models at D:\Ollama\models.
 
-Detailed captcha landscape research, 1688 test logs, and accounts.xlsx structure in `references/captcha-infrastructure.md`. 1688 cookie-based login success story and IP-binding discovery in `references/1688-cookie-auth.md`. Large file download strategies behind GFW (BitsTransfer, GitHub mirrors) in `references/large-file-downloads-gfw.md`. Vision model comparison (Qwen3.5-3B-Omni vs alternatives) in `references/vision-models-comparison.md`. Platform-specific login behaviors and diagnostic signals (裁判文书网, Apollo.io) in `references/platform-login-behaviors.md`.
+
 
 ## Verification Checklist
 
